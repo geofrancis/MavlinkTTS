@@ -111,7 +111,6 @@ void setup() {
   BMP.speak("I ");
   BMP.speak("have ");
   BMP.speak("awoken ");
-  BMP.speak("Tremble in fear!");
 }
 
 
