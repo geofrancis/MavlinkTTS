@@ -117,12 +117,12 @@ void FetchMavlinkSerial() {
                   BMP.speak(str1);
                   BMP.speak("heading");
                   char str2[8];
-                  itoa(gps_Head, str2, 10);
+                  itoa(navbearing, str2, 10);
                   BMP.speak(str2);
                   BMP.speak("degrees ");
-                  BMP.speak(" speed ");
+                  BMP.speak(" distance ");
                   char str3[8];
-                  itoa(gps_Vel, str3, 10);
+                  itoa(wpdist, str3, 10);
                   BMP.speak(str3);
                   BMP.speak("  ");
                   wp_numberold = wp_number;
