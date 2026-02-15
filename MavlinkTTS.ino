@@ -39,7 +39,7 @@ BackgroundAudioVoice v[] = {
 
 
 #include <ESP32I2SAudio.h>
-ESP32I2SAudio audio(15, 16, 7); // BCLK, LRCLK, DOUT (,MCLK)
+ESP32I2SAudio audio(15, 16, 7);  // BCLK, LRCLK, DOUT (,MCLK)
 BackgroundAudioSpeech BMP(audio);
 
 void usage() {
@@ -58,6 +58,7 @@ void usage() {
 
 
 String mavmessage;
+String mavmessageold;
 uint8_t gps_Fix = 0;
 int32_t gps_Lat = 0;
 int32_t gps_Long = 0;
@@ -78,6 +79,7 @@ int flightmode = 0;
 long GPSLAT = 0.1234567;
 long GPSLON = 0.1234567;
 int satelites = 0;
+int satelitesold = 0;
 int comdroprate = 60;
 int BASEMODE = 0;
 float roll = 0;
@@ -89,65 +91,33 @@ float fcmodein;
 float navbearing = 0;
 float wpdist = 0;
 float xtrackerror = 0;
+int TIME_TO_SLEEP = 0;
 
 void setup() {
   Serial.begin(115200);
-
-  // We need to set up a voice before any output
+ /*
+  rate in wpm , 175 default
+  pitch adjustment 0-99, 50 default
+  word gap in 10-ms
+*/
   BMP.setVoice(v[1]);
+  //BMP.setRate(175);
+ // BMP.setPitch(50);
+  //BMP.setWordGap(100);
 
   delay(3000);
   Serial.printf("Ready!\r\n");
   BMP.begin();
-  usage();
   BMP.speak("I ");
   BMP.speak("have ");
   BMP.speak("awoken ");
   BMP.speak("Tremble in fear!");
-
 }
 
-void loop() {
-  if (Serial.available()) {
-    String s = Serial.readStringUntil('\n');
-    if (s[0]  == '?') {
-      usage();
-    } else if (s[0] == '*') {
-      int voice = s.substring(1, 2).toInt();
-      if ((voice >= 0) && (voice < (int) sizeof(v) / (int) sizeof(v[0]))) {
-        BMP.flush();
-        while (!BMP.done()) {
-          delay(1); // Busy-wait because it's not safe to change voices while producing samples...
-        }
-        BMP.setVoice(v[voice]);
-        Serial.printf("Changed voice to '%s'\r\n", v[voice].name);
-      } else {
-        Serial.printf("Error: Voice number %d out of bounds\r\n", voice);
-      }
-    } else if (s[0] == '!') {
-      if (s.substring(1, 5) == "rate") {
-        int rate = s.substring(6).toInt();
-        BMP.setRate(rate);
-        Serial.printf("Set rate to %d\r\n", rate);
-      } else if (s.substring(1, 6) == "pitch") {
-        int pitch = s.substring(7).toInt();
-        BMP.setPitch(pitch);
-        Serial.printf("Set pitch to %d\r\n", pitch);
-      } else if (s.substring(1, 4) == "gap") {
-        int gap = s.substring(5).toInt();
-        BMP.setWordGap(gap);
-        Serial.printf("Set word gap to %d\r\n", gap);
-      } else {
-        Serial.printf("Unable to parse command %s\r\n", s.c_str());
-      }
-    } else {
-      Serial.printf("Speaking '%s'\r\n", s.c_str());
-      BMP.write(s.c_str(), strlen(s.c_str()) + 1 /* Need to include \0 */);
-    }
-  }
 
- // BMP.speak("I ");
- FetchMavlinkSerial();
+void loop() {
+  // BMP.speak("I ");
+  FetchMavlinkSerial();
 
 
   delay(10);
