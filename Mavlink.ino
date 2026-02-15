@@ -41,70 +41,93 @@ void FetchMavlinkSerial() {
             //   Serial.println(datagps.alt);
             //Serial.print("Satelite visible: ");
             //  Serial.println(datagps.satellites_visible);
+
             satelites = (datagps.satellites_visible);
-            //   Serial.println(datagps.eph);
-            HDOP = (datagps.eph);
-            //Serial.println(datagps.epv);
-            break;
-          }
+            if (satelitesold != satelites) {
+              char str[8];
+              itoa(satelites, str, 10);
+              BMP.speak(str);
+              satelitesold = satelites;
+              HDOP = (datagps.eph);
+
+              break;
+            }
 
 
-        case MAVLINK_MSG_ID_SYS_STATUS:  // #1: SYS_STATUS
-          {
-            //mavlink_message_t* msg;
-            mavlink_sys_status_t sys_status;
-            mavlink_msg_sys_status_decode(&msg, &sys_status);
-            //Serial.print("PX SYS STATUS: ");
-            // Serial.print("[Bat (V): ");
-            // Serial.print(sys_status.voltage_battery);
-            VOLTS = (sys_status.voltage_battery);
-            // Serial.print(sys_status.voltage_battery / 1000);
-            //   Serial.print("], [Bat (A): ");
-            //   Serial.print(sys_status.current_battery);
-            AMPS = (sys_status.current_battery);
-            //  Serial.print("], [Comms loss (%): ");
-            //  Serial.print(sys_status.drop_rate_comm);
-            //comdroprate = (sys_status.drop_rate_comm);
-            //      Serial.println("]");
-          }
+            case MAVLINK_MSG_ID_SYS_STATUS:  // #1: SYS_STATUS
+              {
+                //mavlink_message_t* msg;
+                mavlink_sys_status_t sys_status;
+                mavlink_msg_sys_status_decode(&msg, &sys_status);
+                //Serial.print("PX SYS STATUS: ");
+                // Serial.print("[Bat (V): ");
+                // Serial.print(sys_status.voltage_battery);
+                VOLTS = (sys_status.voltage_battery);
+                // Serial.print(sys_status.voltage_battery / 1000);
+                //   Serial.print("], [Bat (A): ");
+                //   Serial.print(sys_status.current_battery);
+                AMPS = (sys_status.current_battery);
+                //  Serial.print("], [Comms loss (%): ");
+                //  Serial.print(sys_status.drop_rate_comm);
+                //comdroprate = (sys_status.drop_rate_comm);
+                //      Serial.println("]");
+              }
 
 
-          break;
+              break;
 
-        case MAVLINK_MSG_ID_ATTITUDE:  // #30
-          {
+            case MAVLINK_MSG_ID_ATTITUDE:  // #30
+              {
 
-            mavlink_attitude_t attitude;
-            mavlink_msg_attitude_decode(&msg, &attitude);
-            // Serial.println("PX ATTITUDE");
-            // Serial.println(attitude.roll);
-            // roll = (attitude.roll);
-            //  pitch = (attitude.pitch);
-            //  yaw = (attitude.yaw);
-            //if (attitude.roll > 1) leds_modo = 0;
-            //else if (attitude.roll < -1) leds_modo = 2;
-            //else leds_modo = 1;
-          }
+                mavlink_attitude_t attitude;
+                mavlink_msg_attitude_decode(&msg, &attitude);
+                // Serial.println("PX ATTITUDE");
+                // Serial.println(attitude.roll);
+                // roll = (attitude.roll);
+                //  pitch = (attitude.pitch);
+                //  yaw = (attitude.yaw);
+                //if (attitude.roll > 1) leds_modo = 0;
+                //else if (attitude.roll < -1) leds_modo = 2;
+                //else leds_modo = 1;
+              }
 
-          break;
+              break;
 
-        case MAVLINK_MSG_ID_RC_CHANNELS_RAW:  // #35
-          {
-            mavlink_rc_channels_raw_t chs;
-            mavlink_msg_rc_channels_raw_decode(&msg, &chs);
-            //  Serial.print("Chanel 1 raw ");
-            //   Serial.println(chs.chan1_raw);
-          }
+            case MAVLINK_MSG_ID_RC_CHANNELS_RAW:  // #35
+              {
+                mavlink_rc_channels_raw_t chs;
+                mavlink_msg_rc_channels_raw_decode(&msg, &chs);
+                //  Serial.print("Chanel 1 raw ");
+                //   Serial.println(chs.chan1_raw);
+              }
 
-          break;
+              break;
 
-        case MAVLINK_MSG_ID_MISSION_CURRENT:
-          {
-            mavlink_mission_current_t RPNUM;
-            mavlink_msg_mission_current_decode(&msg, &RPNUM);
-            //  Serial.print("wp_number ");
-            //  Serial.println(wp_number);
-            wp_number = (RPNUM.seq);
+            case MAVLINK_MSG_ID_MISSION_CURRENT:
+              {
+                mavlink_mission_current_t RPNUM;
+                mavlink_msg_mission_current_decode(&msg, &RPNUM);
+                //  Serial.print("wp_number ");
+                //  Serial.println(wp_number);
+                wp_number = (RPNUM.seq);
+                if (wp_numberold != wp_number) {
+                  BMP.speak("waypoint");
+                  char str1[8];
+                  itoa(wp_number, str1, 10);
+                  BMP.speak(str1);
+                  BMP.speak("heading");
+                  char str2[8];
+                  itoa(gps_Head, str2, 10);
+                  BMP.speak(str2);
+                  BMP.speak("degrees ");
+                  BMP.speak(" speed ");
+                  char str3[8];
+                  itoa(gps_Vel, str3, 10);
+                  BMP.speak(str3);
+                  BMP.speak("  ");
+                  wp_numberold = wp_number;
+                }
+              }
           }
           break;
 
@@ -150,11 +173,15 @@ void FetchMavlinkSerial() {
               //    Serial.print("     text: ");
               //  Serial.println(packet.text);
               mavmessage = (packet.text);
-              BMP.speak(packet.text);
+              if (mavmessageold != mavmessage) {
+                BMP.speak(mavmessage);
+                mavmessageold = mavmessage;
+              }
             }
           }
-          break;
       }
+      break;
     }
   }
 }
+
